@@ -12,32 +12,36 @@ Permite cargar archivos CSV y utilizar:
 
 ### Frontend
 
-Instalar dependencias:
+Abrir una primera terminal en VSCode
 
-npm install
+1. Instalar dependencias:
 
-Iniciar React:
+`npm install`
 
-npm run dev
+2. Iniciar React:
+
+`npm run dev`
 
 ### Backend
 
-Entrar a la carpeta:
+Abrir una segunda terminal en VSCode
 
-cd backend
+3. Entrar a la carpeta:
 
-Crear entorno virtual:
+`cd backend`
 
-python -m venv .venv
+4. Crear entorno virtual:
 
-Activar entorno virtual en Windows:
+`python -m venv .venv`
 
-.\.venv\Scripts\Activate.ps1
+5. Activar entorno virtual en Windows:
 
-Instalar dependencias:
+`.\.venv\Scripts\Activate.ps1`
 
-pip install -r requirements.txt
+6. Instalar dependencias:
 
-Iniciar servidor:
+`pip install -r requirements.txt`
 
-python app.py
+7. Iniciar servidor:
+
+`python app.py`
