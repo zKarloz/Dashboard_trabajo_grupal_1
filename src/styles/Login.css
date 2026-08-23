@@ -1,0 +1,16 @@
+.login-page {
+    width: 350px;
+    margin: 80px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.login-page input {
+    padding: 10px;
+}
+
+.login-page button {
+    padding: 10px;
+    cursor: pointer;
+}
