@@ -2,12 +2,11 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 import random
-import io
-import base64
+
+from pandas_service import procesar_pandas
+from numpy_service import procesar_numpy
+from matplotlib_service import crear_grafico
 
 
 app = Flask(__name__)
@@ -55,66 +54,15 @@ def analyze():
 
     df = pd.read_csv(archivo)
 
-    # PANDAS
-    original = df.fillna("").to_dict(orient="records")
+    original, limpio = procesar_pandas(df)
 
-    limpio = df.dropna().drop_duplicates()
+    estadisticas = procesar_numpy(df)
 
-    limpio_json = limpio.fillna("").to_dict(orient="records")
-
-    # NUMPY
-    estadisticas = {}
-
-    columnas_numericas = df.select_dtypes(include=np.number)
-
-    for columna in columnas_numericas.columns:
-
-        datos = columnas_numericas[columna].dropna().to_numpy()
-
-        if len(datos) > 0:
-            estadisticas[columna] = {
-                "min": float(np.min(datos)),
-                "max": float(np.max(datos)),
-                "media": float(np.mean(datos)),
-                "desviacion": float(np.std(datos))
-            }
-
-    # MATPLOTLIB
-    grafico = ""
-
-    if len(columnas_numericas.columns) > 0:
-
-        columnas = columnas_numericas.columns
-        promedios = columnas_numericas.mean()
-
-        ancho = max(8, len(columnas) * 1.2)
-
-        plt.figure(figsize=(ancho, 5))
-
-        plt.bar(columnas, promedios)
-
-        plt.title("Promedio por columna")
-        plt.xlabel("Columnas")
-        plt.ylabel("Promedio")
-
-        plt.xticks(rotation=45, ha="right")
-
-        plt.tight_layout()
-
-        imagen = io.BytesIO()
-
-        plt.savefig(imagen, format="png")
-        plt.close()
-
-        imagen.seek(0)
-
-        grafico = base64.b64encode(
-            imagen.getvalue()
-        ).decode("utf-8")
+    grafico = crear_grafico(df)
 
     return jsonify({
         "original": original,
-        "limpio": limpio_json,
+        "limpio": limpio,
         "estadisticas": estadisticas,
         "grafico": grafico
     })
