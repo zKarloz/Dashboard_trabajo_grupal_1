@@ -1,8 +1,8 @@
 function Contact() {
     return(
         <section className="page">
-            <h2>Bienvenido</h2>
-            <p>Este es el inicio de nuestro proyecto React + Typescript</p>
+            <h2>Contactanos</h2>
+            <p>En nuestros correos institucionales</p>
         </section>
     );
 }
