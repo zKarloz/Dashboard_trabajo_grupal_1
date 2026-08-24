@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
 
 function Dashboard() {
@@ -9,6 +10,15 @@ function Dashboard() {
     const [estadisticas, setEstadisticas] = useState<any>({});
     const [grafico, setGrafico] = useState("");
     const [limpio, setLimpio] = useState(false);
+
+    const navigate = useNavigate();
+
+    const cerrarSesion = () => {
+
+        localStorage.removeItem("dashboard_logged_in");
+
+        navigate("/login");
+    };
 
     const subirArchivo = async (
         e: React.ChangeEvent<HTMLInputElement>
@@ -60,6 +70,10 @@ function Dashboard() {
                     Matplotlib
                 </button>
 
+                <button onClick={cerrarSesion}>
+                    Cerrar sesión
+                </button>
+
             </aside>
 
             <section className="dashboard-content">
@@ -86,6 +100,7 @@ function Dashboard() {
                         </button>
 
                         {tabla.length > 0 ? (
+
                             <div className="tabla-container">
 
                                 <table>
@@ -125,8 +140,13 @@ function Dashboard() {
                                 </table>
 
                             </div>
+
                         ) : (
-                            <p>Adjunta un archivo CSV para mostrar los datos.</p>
+
+                            <p>
+                                Adjunta un archivo CSV para mostrar los datos.
+                            </p>
+
                         )}
 
                     </div>
@@ -163,13 +183,16 @@ function Dashboard() {
                                         </p>
 
                                     </div>
+
                                 )
                             )
 
                         ) : (
+
                             <p>
                                 Adjunta un CSV con columnas numéricas.
                             </p>
+
                         )}
 
                     </div>

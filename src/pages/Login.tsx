@@ -42,7 +42,14 @@ function Login() {
         const datos = await respuesta.json();
 
         if (datos.success) {
+
+            localStorage.setItem(
+                "dashboard_logged_in",
+                "true"
+            );
+
             navigate("/dashboard");
+
         }
         else {
             alert("Código incorrecto");
