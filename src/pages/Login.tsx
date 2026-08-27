@@ -4,6 +4,9 @@ import { useState } from "react";
 // Importa useNavigate para cambiar de ruta desde el código
 import { useNavigate } from "react-router-dom";
 
+// MEJORAR CODIGO
+import { API_URL } from "../config/api";
+
 // Importa los estilos del Login
 import "../styles/Login.css";
 
@@ -25,7 +28,7 @@ function Login() {
     const enviarOtp = async () => {
 
         // Envía el correo al servidor Flask
-        await fetch("http://127.0.0.1:5000/send-otp", 
+        await fetch(`${API_URL}/send-otp`, 
             {
                 // Indica que se enviarán datos al servidor
                 method: "POST",
@@ -47,7 +50,7 @@ function Login() {
 
         // Envía el correo y el código al backend para verificarlos
         const respuesta = await fetch(
-            "http://127.0.0.1:5000/verify-otp",
+            `${API_URL}/verify-otp`,
             {
                 method: "POST",
 

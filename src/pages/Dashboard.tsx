@@ -4,6 +4,9 @@ import { useState } from "react";
 // Importa useNavigate para cambiar de ruta desde el código
 import { useNavigate } from "react-router-dom";
 
+// MEJORAR CODIGO
+import { API_URL } from "../config/api";
+
 // Importa los estilos del Dashboard
 import "../styles/Dashboard.css";
 
@@ -58,7 +61,7 @@ function Dashboard() {
 
         // Envía el CSV al backend Flask
         const respuesta = await fetch(
-            "http://127.0.0.1:5000/analyze",
+            `${API_URL}/analyze`,
             {
                 method: "POST",
                 body: formData

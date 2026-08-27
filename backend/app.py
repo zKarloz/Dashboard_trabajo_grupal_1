@@ -30,6 +30,14 @@ CORS(app)
 # Diccionario temporal para guardar los códigos OTP
 otps = {}
 
+# Permite comprobar que el backend está funcionando
+@app.route("/", methods=["GET"])
+def inicio():
+    return jsonify({
+        "status": "ok",
+        "message": "Backend funcionando correctamente"
+    })
+
 # Crea la ruta POST /send-otp
 @app.route("/send-otp", methods=["POST"])
 def send_otp():
