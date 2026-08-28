@@ -1,18 +1,33 @@
+# Probar en Vercel
+LINK = https://dashboard-trabajo-grupal-1.vercel.app/
+
 # Proyecto React + Python
 
-Proyecto desarrollado con React, TypeScript y Python.
+Proyecto desarrollado con React, TypeScript, Vite, Flask y Python.
 
-Permite cargar archivos CSV y utilizar:
+Permite:
 
-- Pandas para visualizar y limpiar datos.
-- NumPy para realizar cálculos estadísticos.
-- Matplotlib para generar gráficos.
+- Visualizar y limpiar archivos CSV con Pandas.
+- Calcular estadísticas con NumPy.
+- Generar gráficos con Matplotlib.
+- Realizar predicciones mediante webcam con Teachable Machine y TensorFlow.js.
 
-## Instalación
+## Requisitos previos
+
+Antes de ejecutar el proyecto, instalar:
+
+- Node.js
+- Python 3.14
+- Git
+- Visual Studio Code
+
+## Descargar o actualizar el proyecto
+
+Para clonar el repositorio por primera vez:
 
 ### Frontend
 
-Abrir una primera terminal en VSCode
+Abrir una primera terminal en VSCode (Usar CMD/Command Prompt)
 
 1. Instalar dependencias:
 
@@ -24,7 +39,7 @@ Abrir una primera terminal en VSCode
 
 ### Backend
 
-Abrir una segunda terminal en VSCode
+Abrir una segunda terminal en VSCode (No usar PowerShell)
 
 3. Entrar a la carpeta:
 
@@ -36,7 +51,8 @@ Abrir una segunda terminal en VSCode
 
 5. Activar entorno virtual en Windows:
 
-`.\.venv\Scripts\Activate.ps1`
+`.venv\Scripts\activate.bat` (Para CMD o Command Prompt)
+`source .venv/Scripts/activate` (Para Git Bash)
 
 6. Instalar dependencias:
 
@@ -45,3 +61,7 @@ Abrir una segunda terminal en VSCode
 7. Iniciar servidor:
 
 `python app.py`
+
+```bash
+git clone https://github.com/zKarloz/Dashboard_trabajo_grupal_1.git
+cd Dashboard_trabajo_grupal_1
