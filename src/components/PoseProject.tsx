@@ -1,186 +1,174 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as tmPose from "@teachablemachine/pose";
 import "../styles/PoseProject.css";
 
 function PoseProject() {
+    // Canvas donde se mostrará la webcam.
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // Canvas donde se mostrará la cámara
-    const canvasRef =
-        useRef<HTMLCanvasElement>(null);
+    // Referencias para apagar la cámara y detener la animación.
+    const webcamRef = useRef<tmPose.Webcam | null>(null);
+    const animationRef = useRef<number | null>(null);
+    const activoRef = useRef(true);
 
-    // Guarda las predicciones
-    const [predicciones, setPredicciones] =
-        useState<string[]>([]);
+    // Estados del componente.
+    const [predicciones, setPredicciones] = useState<string[]>([]);
+    const [iniciado, setIniciado] = useState(false);
+    const [cargando, setCargando] = useState(false);
+    const [error, setError] = useState("");
 
-    // Indica si la webcam está activa
-    const [iniciado, setIniciado] =
-        useState(false);
+    // Apaga la webcam al cambiar de herramienta o salir del Dashboard.
+    useEffect(() => {
+        activoRef.current = true;
 
-    // Indica si está iniciando
-    const [cargando, setCargando] =
-        useState(false);
+        return () => {
+            activoRef.current = false;
 
-    // Guarda posibles errores
-    const [error, setError] =
-        useState("");
+            if (animationRef.current !== null) {
+                cancelAnimationFrame(animationRef.current);
+            }
 
-    // Inicia la webcam y el modelo
+            try {
+                webcamRef.current?.stop();
+            } catch {
+                // La cámara podría no haber terminado de iniciarse.
+            }
+        };
+    }, []);
+
+    // Inicia la webcam y el reconocimiento de posturas.
     const iniciar = async () => {
-
-        // Evita presionar varias veces
         if (iniciado || cargando) return;
 
         setCargando(true);
         setError("");
+        activoRef.current = true;
 
         const size = 300;
-        const flip = true;
-
-        // Webcam siempre tendrá un valor
-        const webcam = new tmPose.Webcam(
-            size,
-            size,
-            flip
-        );
+        const webcam = new tmPose.Webcam(size, size, true);
+        webcamRef.current = webcam;
 
         try {
-
-            // Comprueba que el navegador
-            // permita utilizar una webcam
-            if (
-                !navigator.mediaDevices?.getUserMedia
-            ) {
+            if (!navigator.mediaDevices?.getUserMedia) {
                 throw new Error(
                     "El navegador no permite utilizar la webcam."
                 );
             }
 
-            // Primero solicita permiso
+            // Primero solicita permiso y enciende la webcam.
             await webcam.setup();
-
-            // Enciende la webcam
             await webcam.play();
 
-            setIniciado(true);
+            if (!activoRef.current) return;
 
-            // Ruta de los archivos del modelo
-            const URL = "/pose_model/";
-
-            const modelURL =
-                URL + "model.json";
-
-            const metadataURL =
-                URL + "metadata.json";
-
-            // Carga el modelo después
-            // de activar la webcam
-            const model = await tmPose.load(
-                modelURL,
-                metadataURL
-            );
-
-            // Obtiene el canvas de React
             const canvas = canvasRef.current;
 
             if (!canvas) {
-                throw new Error(
-                    "No se encontró el canvas."
-                );
+                throw new Error("No se encontró el canvas.");
             }
 
             canvas.width = size;
             canvas.height = size;
 
-            const ctx =
-                canvas.getContext("2d");
+            const ctx = canvas.getContext("2d");
 
             if (!ctx) {
-                throw new Error(
-                    "No se pudo preparar el canvas."
-                );
+                throw new Error("No se pudo preparar el canvas.");
             }
 
-            // Analiza continuamente la postura
-            const loop = async () => {
+            setIniciado(true);
 
-                // Actualiza la imagen
+            // Muestra la webcam mientras se carga el modelo.
+            const mostrarWebcam = () => {
+                if (!activoRef.current) return;
+
                 webcam.update();
+                ctx.clearRect(0, 0, size, size);
+                ctx.drawImage(webcam.canvas, 0, 0, size, size);
 
-                // Detecta los puntos del cuerpo
-                const {
-                    pose,
-                    posenetOutput
-                } = await model.estimatePose(
-                    webcam.canvas
-                );
-
-                // Clasifica la postura
-                const resultado =
-                    await model.predict(
-                        posenetOutput
-                    );
-
-                // Convierte las predicciones a texto
-                const nuevasPredicciones =
-                    resultado.map(
-                        (prediccion) =>
-                            `${prediccion.className}: ${(
-                                prediccion.probability *
-                                100
-                            ).toFixed(1)}%`
-                    );
-
-                setPredicciones(
-                    nuevasPredicciones
-                );
-
-                // Limpia el canvas anterior
-                ctx.clearRect(
-                    0,
-                    0,
-                    size,
-                    size
-                );
-
-                // Dibuja la imagen de la webcam
-                ctx.drawImage(
-                    webcam.canvas,
-                    0,
-                    0,
-                    size,
-                    size
-                );
-
-                // Dibuja los puntos y el esqueleto
-                if (pose) {
-
-                    const minPartConfidence =
-                        0.5;
-
-                    tmPose.drawKeypoints(
-                        pose.keypoints,
-                        minPartConfidence,
-                        ctx
-                    );
-
-                    tmPose.drawSkeleton(
-                        pose.keypoints,
-                        minPartConfidence,
-                        ctx
-                    );
-                }
-
-                // Repite el análisis
-                requestAnimationFrame(loop);
+                animationRef.current =
+                    requestAnimationFrame(mostrarWebcam);
             };
 
-            // Inicia el ciclo
-            requestAnimationFrame(loop);
+            animationRef.current =
+                requestAnimationFrame(mostrarWebcam);
 
+            // Carga los archivos exportados por Teachable Machine.
+            const URL = "/pose_model/";
+
+            const model = await tmPose.load(
+                URL + "model.json",
+                URL + "metadata.json"
+            );
+
+            if (!activoRef.current) return;
+
+            // Detiene la vista provisional antes de iniciar las predicciones.
+            if (animationRef.current !== null) {
+                cancelAnimationFrame(animationRef.current);
+            }
+
+            // Detecta y clasifica continuamente la postura.
+            const loop = async () => {
+                if (!activoRef.current) return;
+
+                try {
+                    webcam.update();
+
+                    const { pose, posenetOutput } =
+                        await model.estimatePose(webcam.canvas);
+
+                    const resultado =
+                        await model.predict(posenetOutput);
+
+                    if (!activoRef.current) return;
+
+                    setPredicciones(
+                        resultado.map(
+                            (prediccion) =>
+                                `${prediccion.className}: ${(
+                                    prediccion.probability * 100
+                                ).toFixed(1)}%`
+                        )
+                    );
+
+                    ctx.clearRect(0, 0, size, size);
+                    ctx.drawImage(webcam.canvas, 0, 0, size, size);
+
+                    if (pose) {
+                        const confianzaMinima = 0.5;
+
+                        tmPose.drawKeypoints(
+                            pose.keypoints,
+                            confianzaMinima,
+                            ctx
+                        );
+
+                        tmPose.drawSkeleton(
+                            pose.keypoints,
+                            confianzaMinima,
+                            ctx
+                        );
+                    }
+
+                    animationRef.current =
+                        requestAnimationFrame(loop);
+                } catch (errorPrediccion) {
+                    console.error(
+                        "Error durante la predicción:",
+                        errorPrediccion
+                    );
+
+                    setError(
+                        "La cámara funciona, pero falló el reconocimiento."
+                    );
+                }
+            };
+
+            animationRef.current = requestAnimationFrame(loop);
         } catch (errorInicio) {
-
             console.error(
-                "Error al iniciar la webcam:",
+                "Error al iniciar el proyecto de posturas:",
                 errorInicio
             );
 
@@ -192,75 +180,50 @@ function PoseProject() {
             setError(mensaje);
             setIniciado(false);
 
-            // Intenta apagar la cámara
-            // si ocurrió un error
             try {
                 webcam.stop();
             } catch {
-                // No hace nada si la webcam
-                // todavía no estaba configurada
+                // La cámara todavía podría no estar configurada.
             }
-
         } finally {
-            setCargando(false);
+            if (activoRef.current) {
+                setCargando(false);
+            }
         }
     };
 
-    return(
+    return (
         <div className="pose-project">
-
             <h3>Proyecto de posturas</h3>
 
             <p>
-                Activa la cámara para reconocer
-                diferentes posturas mediante
+                Activa la cámara para reconocer diferentes posturas mediante
                 Teachable Machine.
             </p>
 
             {!iniciado && (
-                <button
-                    onClick={iniciar}
-                    disabled={cargando}
-                >
-                    {cargando
-                        ? "Iniciando webcam..."
-                        : "Activar webcam"}
+                <button onClick={iniciar} disabled={cargando}>
+                    {cargando ? "Iniciando webcam..." : "Activar webcam"}
                 </button>
             )}
 
             {iniciado && cargando && (
-                <p>
-                    Cámara activada. Cargando
-                    modelo de posturas...
-                </p>
+                <p>Cámara activada. Cargando modelo de posturas...</p>
             )}
 
-            {error && (
-                <p>
-                    Error: {error}
-                </p>
-            )}
+            {error && <p>Error: {error}</p>}
 
             <div className="pose-camera">
-
                 <canvas
                     ref={canvasRef}
                     className="pose-canvas"
                 />
-
             </div>
 
             <div className="pose-predictions">
-
-                {predicciones.map(
-                    (prediccion, index) => (
-
-                        <p key={index}>
-                            {prediccion}
-                        </p>
-                    )
-                )}
-
+                {predicciones.map((prediccion, index) => (
+                    <p key={index}>{prediccion}</p>
+                ))}
             </div>
         </div>
     );
