@@ -1,232 +1,127 @@
 import { useEffect, useRef, useState } from "react";
-import * as tmPose from "@teachablemachine/pose";
-import "../styles/PoseProject.css";
 
-function PoseProject() {
-    // Canvas donde se mostrará la webcam.
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    // Referencias para apagar la cámara y detener la animación.
-    const webcamRef = useRef<tmPose.Webcam | null>(null);
-    const animationRef = useRef<number | null>(null);
-    const activoRef = useRef(true);
-
-    // Estados del componente.
-    const [predicciones, setPredicciones] = useState<string[]>([]);
-    const [iniciado, setIniciado] = useState(false);
-    const [cargando, setCargando] = useState(false);
-    const [error, setError] = useState("");
-
-    // Apaga la webcam al cambiar de herramienta o salir del Dashboard.
-    useEffect(() => {
-        activoRef.current = true;
-
-        return () => {
-            activoRef.current = false;
-
-            if (animationRef.current !== null) {
-                cancelAnimationFrame(animationRef.current);
-            }
-
-            try {
-                webcamRef.current?.stop();
-            } catch {
-                // La cámara podría no haber terminado de iniciarse.
-            }
-        };
-    }, []);
-
-    // Inicia la webcam y el reconocimiento de posturas.
-    const iniciar = async () => {
-        if (iniciado || cargando) return;
-
-        setCargando(true);
-        setError("");
-        activoRef.current = true;
-
-        const size = 300;
-        const webcam = new tmPose.Webcam(size, size, true);
-        webcamRef.current = webcam;
-
-        try {
-            if (!navigator.mediaDevices?.getUserMedia) {
-                throw new Error(
-                    "El navegador no permite utilizar la webcam."
-                );
-            }
-
-            // Primero solicita permiso y enciende la webcam.
-            await webcam.setup();
-            await webcam.play();
-
-            if (!activoRef.current) return;
-
-            const canvas = canvasRef.current;
-
-            if (!canvas) {
-                throw new Error("No se encontró el canvas.");
-            }
-
-            canvas.width = size;
-            canvas.height = size;
-
-            const ctx = canvas.getContext("2d");
-
-            if (!ctx) {
-                throw new Error("No se pudo preparar el canvas.");
-            }
-
-            setIniciado(true);
-
-            // Muestra la webcam mientras se carga el modelo.
-            const mostrarWebcam = () => {
-                if (!activoRef.current) return;
-
-                webcam.update();
-                ctx.clearRect(0, 0, size, size);
-                ctx.drawImage(webcam.canvas, 0, 0, size, size);
-
-                animationRef.current =
-                    requestAnimationFrame(mostrarWebcam);
-            };
-
-            animationRef.current =
-                requestAnimationFrame(mostrarWebcam);
-
-            // Carga los archivos exportados por Teachable Machine.
-            const URL = "/pose_model/";
-
-            const model = await tmPose.load(
-                URL + "model.json",
-                URL + "metadata.json"
-            );
-
-            if (!activoRef.current) return;
-
-            // Detiene la vista provisional antes de iniciar las predicciones.
-            if (animationRef.current !== null) {
-                cancelAnimationFrame(animationRef.current);
-            }
-
-            // Detecta y clasifica continuamente la postura.
-            const loop = async () => {
-                if (!activoRef.current) return;
-
-                try {
-                    webcam.update();
-
-                    const { pose, posenetOutput } =
-                        await model.estimatePose(webcam.canvas);
-
-                    const resultado =
-                        await model.predict(posenetOutput);
-
-                    if (!activoRef.current) return;
-
-                    setPredicciones(
-                        resultado.map(
-                            (prediccion) =>
-                                `${prediccion.className}: ${(
-                                    prediccion.probability * 100
-                                ).toFixed(1)}%`
-                        )
-                    );
-
-                    ctx.clearRect(0, 0, size, size);
-                    ctx.drawImage(webcam.canvas, 0, 0, size, size);
-
-                    if (pose) {
-                        const confianzaMinima = 0.5;
-
-                        tmPose.drawKeypoints(
-                            pose.keypoints,
-                            confianzaMinima,
-                            ctx
-                        );
-
-                        tmPose.drawSkeleton(
-                            pose.keypoints,
-                            confianzaMinima,
-                            ctx
-                        );
-                    }
-
-                    animationRef.current =
-                        requestAnimationFrame(loop);
-                } catch (errorPrediccion) {
-                    console.error(
-                        "Error durante la predicción:",
-                        errorPrediccion
-                    );
-
-                    setError(
-                        "La cámara funciona, pero falló el reconocimiento."
-                    );
-                }
-            };
-
-            animationRef.current = requestAnimationFrame(loop);
-        } catch (errorInicio) {
-            console.error(
-                "Error al iniciar el proyecto de posturas:",
-                errorInicio
-            );
-
-            const mensaje =
-                errorInicio instanceof Error
-                    ? errorInicio.message
-                    : String(errorInicio);
-
-            setError(mensaje);
-            setIniciado(false);
-
-            try {
-                webcam.stop();
-            } catch {
-                // La cámara todavía podría no estar configurada.
-            }
-        } finally {
-            if (activoRef.current) {
-                setCargando(false);
-            }
-        }
-    };
-
-    return (
-        <div className="pose-project">
-            <h3>Proyecto de posturas</h3>
-
-            <p>
-                Activa la cámara para reconocer diferentes posturas mediante
-                Teachable Machine.
-            </p>
-
-            {!iniciado && (
-                <button onClick={iniciar} disabled={cargando}>
-                    {cargando ? "Iniciando webcam..." : "Activar webcam"}
-                </button>
-            )}
-
-            {iniciado && cargando && (
-                <p>Cámara activada. Cargando modelo de posturas...</p>
-            )}
-
-            {error && <p>Error: {error}</p>}
-
-            <div className="pose-camera">
-                <canvas
-                    ref={canvasRef}
-                    className="pose-canvas"
-                />
-            </div>
-
-            <div className="pose-predictions">
-                {predicciones.map((prediccion, index) => (
-                    <p key={index}>{prediccion}</p>
-                ))}
-            </div>
-        </div>
-    );
+// Types for the globals injected by the tfjs / teachablemachine-pose <script> tags.
+// Install the scripts in your index.html (or load them dynamically, see loadScript below):
+//   https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js
+//   https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js
+declare global {
+  interface Window {
+    tmPose: any;
+  }
 }
 
-export default PoseProject;
+const URL = "./public/pose_model/";
+const SIZE = 200;
+
+interface Prediction {
+  className: string;
+  probability: number;
+}
+
+export default function TeachableMachinePose() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const modelRef = useRef<any>(null);
+  const webcamRef = useRef<any>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const [maxPredictions, setMaxPredictions] = useState(0);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+
+  // Clean up the animation loop and webcam stream on unmount.
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      webcamRef.current?.stop?.();
+    };
+  }, []);
+
+  const drawPose = (pose: any) => {
+    const ctx = ctxRef.current;
+    const webcam = webcamRef.current;
+    if (!ctx || !webcam?.canvas) return;
+
+    ctx.drawImage(webcam.canvas, 0, 0);
+
+    if (pose) {
+      const minPartConfidence = 0.5;
+      window.tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
+      window.tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
+    }
+  };
+
+  const predict = async () => {
+    const model = modelRef.current;
+    const webcam = webcamRef.current;
+    if (!model || !webcam) return;
+
+    // Prediction #1: run input through posenet.
+    const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
+    // Prediction #2: run input through the teachable machine classifier.
+    const prediction: Prediction[] = await model.predict(posenetOutput);
+
+    setPredictions(prediction);
+    drawPose(pose);
+  };
+
+  const loop = async () => {
+    webcamRef.current?.update();
+    await predict();
+    rafRef.current = window.requestAnimationFrame(loop);
+  };
+
+  const init = async () => {
+    if (!window.tmPose) {
+      console.error(
+        "tmPose is not loaded. Make sure the tfjs and teachablemachine-pose scripts are included."
+      );
+      return;
+    }
+
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
+
+    // Load the model and metadata.
+    const model = await window.tmPose.load(modelURL, metadataURL);
+    modelRef.current = model;
+    setMaxPredictions(model.getTotalClasses());
+
+    // Set up the webcam.
+    const flip = true;
+    const webcam = new window.tmPose.Webcam(SIZE, SIZE, flip);
+    await webcam.setup();
+    await webcam.play();
+    webcamRef.current = webcam;
+
+    // Set up the canvas.
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.width = SIZE;
+      canvas.height = SIZE;
+      ctxRef.current = canvas.getContext("2d");
+    }
+
+    setIsRunning(true);
+    rafRef.current = window.requestAnimationFrame(loop);
+  };
+
+  return (
+    <div>
+      <div>Teachable Machine Pose Model</div>
+      <button type="button" onClick={init} disabled={isRunning}>
+        Start
+      </button>
+      <div>
+        <canvas ref={canvasRef} />
+      </div>
+      <div id="label-container">
+        {predictions.slice(0, maxPredictions).map((p, i) => (
+          <div key={i}>
+            {p.className}: {p.probability.toFixed(2)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
