@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 // MEJORAR CODIGO
 import { API_URL } from "../config/api";
 
+import ImageProject from "../components/ImageProject";
+
 // Importa los estilos del Dashboard
 import "../styles/Dashboard.css";
 
@@ -105,6 +107,9 @@ function Dashboard() {
 
                 {/* Cambia la herramienta seleccionada a Matplotlib */}
                 <button onClick={() => setHerramienta("matplotlib")}>Matplotlib</button>
+
+                {/* Cambia la herramienta seleccionada a Proyecto de Imagen */}
+                <button onClick={() => setHerramienta("imagen")}>Proyecto de Imagen</button>
 
                 {/* Cierra la sesión */}
                 <button onClick={cerrarSesion}>Cerrar sesión</button>
@@ -229,6 +234,11 @@ function Dashboard() {
                         )}
                     </div>
                 )}
+
+                {herramienta === "imagen" && (
+                    <ImageProject />
+                )}
+
             </section>
         </div>
     );

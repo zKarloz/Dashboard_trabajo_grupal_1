@@ -1,0 +1,31 @@
+.image-project {
+    margin-top: 30px;
+}
+
+.image-project p {
+    margin-bottom: 15px;
+}
+
+.webcam-container {
+    margin-top: 20px;
+}
+
+.webcam-container canvas {
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.prediction-container {
+    margin-top: 20px;
+    max-width: 400px;
+}
+
+.prediction-container p {
+    padding: 8px 12px;
+    margin: 6px 0;
+
+    background-color: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
