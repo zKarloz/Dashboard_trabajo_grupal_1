@@ -19,7 +19,7 @@ function ImageProject() {
         if (iniciado) return;
 
         // Ubicación de los archivos exportados de Teachable Machine
-        const URL = "/my_model/";
+        const URL = "/image_model/";
 
         const modelURL = URL + "model.json";
         const metadataURL = URL + "metadata.json";

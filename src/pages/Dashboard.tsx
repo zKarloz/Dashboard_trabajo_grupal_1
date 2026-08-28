@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config/api";
 
 import ImageProject from "../components/ImageProject";
+import PoseProject from "../components/poseProject";
 
 // Importa los estilos del Dashboard
 import "../styles/Dashboard.css";
@@ -110,6 +111,9 @@ function Dashboard() {
 
                 {/* Cambia la herramienta seleccionada a Proyecto de Imagen */}
                 <button onClick={() => setHerramienta("imagen")}>Proyecto de Imagen</button>
+
+                {/* Cambia la herramienta seleccionada a Proyecto de Posturas */}
+                <button onClick={() => setHerramienta("posturas")}>Proyecto de Posturas</button>
 
                 {/* Cierra la sesión */}
                 <button onClick={cerrarSesion}>Cerrar sesión</button>
@@ -237,6 +241,10 @@ function Dashboard() {
 
                 {herramienta === "imagen" && (
                     <ImageProject />
+                )}
+
+                {herramienta === "posturas" && (
+                    <PoseProject />
                 )}
 
             </section>
