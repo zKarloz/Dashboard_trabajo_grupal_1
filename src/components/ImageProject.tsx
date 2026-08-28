@@ -1,114 +1,101 @@
-import { useRef, useState } from "react";
-import * as tmImage from "@teachablemachine/image";
-import "../styles/ImageProject.css";
+import { useEffect, useRef, useState } from "react";
 
-function ImageProject() {
-
-    // Lugar donde se mostrará la webcam
-    const webcamContainer = useRef<HTMLDivElement>(null);
-
-    // Guarda las predicciones del modelo
-    const [predicciones, setPredicciones] = useState<string[]>([]);
-
-    // Evita iniciar la cámara más de una vez
-    const [iniciado, setIniciado] = useState(false);
-
-    // Inicia el modelo y la webcam
-    const iniciar = async () => {
-
-        if (iniciado) return;
-
-        // Ubicación de los archivos exportados de Teachable Machine
-        const URL = "/image_model/";
-
-        const modelURL = URL + "model.json";
-        const metadataURL = URL + "metadata.json";
-
-        // Carga el modelo y sus metadatos
-        const model = await tmImage.load(
-            modelURL,
-            metadataURL
-        );
-
-        // Crea la webcam
-        const webcam = new tmImage.Webcam(
-            300,
-            300,
-            true
-        );
-
-        // Solicita permiso para utilizar la cámara
-        await webcam.setup();
-
-        // Inicia la webcam
-        await webcam.play();
-
-        setIniciado(true);
-
-        // Agrega la webcam al componente
-        if (webcamContainer.current) {
-            webcamContainer.current.appendChild(
-                webcam.canvas
-            );
-        }
-
-        // Función que analiza continuamente la imagen
-        const loop = async () => {
-
-            // Actualiza la imagen de la webcam
-            webcam.update();
-
-            // Envía la imagen actual al modelo
-            const resultado = await model.predict(
-                webcam.canvas
-            );
-
-            // Convierte las predicciones a texto
-            const nuevasPredicciones = resultado.map(
-                (prediccion) =>
-                    `${prediccion.className}: ${(
-                        prediccion.probability * 100
-                    ).toFixed(1)}%`
-            );
-            setPredicciones(nuevasPredicciones);
-
-            // Repite el proceso en el siguiente frame
-            requestAnimationFrame(loop);
-        };
-        // Inicia el análisis continuo
-        requestAnimationFrame(loop);
-    };
-
-    return(
-        <div className="image-project">
-
-            <h3>Proyecto de imagen</h3>
-
-            <p>Utiliza la cámara para realizar predicciones con el modelo de Teachable Machine.</p>
-
-            {!iniciado && (
-                <button onClick={iniciar}>
-                    Activar webcam
-                </button>
-            )}
-
-            <div
-                ref={webcamContainer}
-                className="webcam-container"
-            />
-
-            <div className="prediction-container">
-
-                {predicciones.map(
-                    (prediccion, index) => (
-                        <p key={index}>
-                            {prediccion}
-                        </p>
-                    )
-                )}
-
-            </div>
-        </div>
-    );
+// Types for the globals injected by the tfjs / teachablemachine-image <script> tags.
+// Install the scripts in your index.html (or load them dynamically):
+//   https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js
+//   https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js
+declare global {
+  interface Window {
+    tmImage: any;
+  }
 }
-export default ImageProject;
+
+const URL = `${import.meta.env.BASE_URL}image_model/`;
+const SIZE = 200;
+
+interface Prediction {
+  className: string;
+  probability: number;
+}
+
+export default function TeachableMachineImage() {
+  const webcamContainerRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef<any>(null);
+  const webcamRef = useRef<any>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const [maxPredictions, setMaxPredictions] = useState(0);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+
+  // Clean up the animation loop and webcam stream on unmount.
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      webcamRef.current?.stop?.();
+    };
+  }, []);
+
+  const predict = async () => {
+    const model = modelRef.current;
+    const webcam = webcamRef.current;
+    if (!model || !webcam) return;
+
+    // predict can take in an image, video or canvas html element
+    const prediction: Prediction[] = await model.predict(webcam.canvas);
+    setPredictions(prediction);
+  };
+
+  const loop = async () => {
+    webcamRef.current?.update();
+    await predict();
+    rafRef.current = window.requestAnimationFrame(loop);
+  };
+
+  const init = async () => {
+    if (!window.tmImage) {
+      console.error(
+        "tmImage is not loaded. Make sure the tfjs and teachablemachine-image scripts are included."
+      );
+      return;
+    }
+
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
+
+    // Load the model and metadata.
+    const model = await window.tmImage.load(modelURL, metadataURL);
+    modelRef.current = model;
+    setMaxPredictions(model.getTotalClasses());
+
+    // Set up the webcam.
+    const flip = true;
+    const webcam = new window.tmImage.Webcam(SIZE, SIZE, flip);
+    await webcam.setup();
+    await webcam.play();
+    webcamRef.current = webcam;
+
+    // Append the webcam canvas to the DOM.
+    webcamContainerRef.current?.appendChild(webcam.canvas);
+
+    setIsRunning(true);
+    rafRef.current = window.requestAnimationFrame(loop);
+  };
+
+  return (
+    <div>
+      <div>Teachable Machine Image Model</div>
+      <button type="button" onClick={init} disabled={isRunning}>
+        Start
+      </button>
+      <div id="webcam-container" ref={webcamContainerRef} />
+      <div id="label-container">
+        {predictions.slice(0, maxPredictions).map((p, i) => (
+          <div key={i}>
+            {p.className}: {p.probability.toFixed(2)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
