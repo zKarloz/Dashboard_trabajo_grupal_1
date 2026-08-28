@@ -16,7 +16,6 @@ function PoseProject() {
     const [iniciado, setIniciado] =
         useState(false);
 
-
     // Inicia el modelo y la webcam
     const iniciar = async () => {
 
@@ -33,20 +32,17 @@ function PoseProject() {
         const metadataURL =
             URL + "metadata.json";
 
-
         // Carga el modelo de posturas
         const model = await tmPose.load(
             modelURL,
             metadataURL
         );
 
-
         // Tamaño de la webcam
         const size = 300;
 
         // Voltea horizontalmente la imagen
         const flip = true;
-
 
         // Crea la webcam
         const webcam =
@@ -56,7 +52,6 @@ function PoseProject() {
                 flip
             );
 
-
         // Solicita permiso para usar la cámara
         await webcam.setup();
 
@@ -65,30 +60,25 @@ function PoseProject() {
 
         setIniciado(true);
 
-
         // Obtiene el canvas de React
         const canvas = canvasRef.current;
 
         if (!canvas) return;
 
-
         // Define el tamaño del canvas
         canvas.width = size;
         canvas.height = size;
-
 
         // Obtiene el contexto utilizado para dibujar
         const ctx = canvas.getContext("2d");
 
         if (!ctx) return;
 
-
         // Actualiza continuamente la cámara
         const loop = async () => {
 
             // Actualiza el frame de la webcam
             webcam.update();
-
 
             // Detecta la postura de la persona
             const {
@@ -99,13 +89,11 @@ function PoseProject() {
                     webcam.canvas
                 );
 
-
             // Clasifica la postura detectada
             const resultado =
                 await model.predict(
                     posenetOutput
                 );
-
 
             // Convierte las predicciones a texto
             const nuevasPredicciones =
@@ -116,12 +104,10 @@ function PoseProject() {
                         ).toFixed(1)}%`
                 );
 
-
             // Guarda las predicciones
             setPredicciones(
                 nuevasPredicciones
             );
-
 
             // Dibuja la imagen de la webcam
             ctx.drawImage(
@@ -130,13 +116,11 @@ function PoseProject() {
                 0
             );
 
-
             // Si detectó una postura
             if (pose) {
 
                 // Confianza mínima para mostrar un punto
                 const minPartConfidence = 0.5;
-
 
                 // Dibuja los puntos del cuerpo
                 tmPose.drawKeypoints(
@@ -144,7 +128,6 @@ function PoseProject() {
                     minPartConfidence,
                     ctx
                 );
-
 
                 // Dibuja el esqueleto
                 tmPose.drawSkeleton(
@@ -154,16 +137,13 @@ function PoseProject() {
                 );
             }
 
-
             // Ejecuta nuevamente el ciclo
             requestAnimationFrame(loop);
         };
 
-
         // Inicia el análisis continuo
         requestAnimationFrame(loop);
     };
-
 
     return(
         <div className="pose-project">
@@ -176,13 +156,11 @@ function PoseProject() {
                 Teachable Machine.
             </p>
 
-
             {!iniciado && (
                 <button onClick={iniciar}>
                     Activar webcam
                 </button>
             )}
-
 
             <div className="pose-camera">
 
@@ -193,7 +171,6 @@ function PoseProject() {
 
             </div>
 
-
             <div className="pose-predictions">
 
                 {predicciones.map(
@@ -202,14 +179,11 @@ function PoseProject() {
                         <p key={index}>
                             {prediccion}
                         </p>
-
                     )
                 )}
 
             </div>
-
         </div>
     );
 }
-
 export default PoseProject;
