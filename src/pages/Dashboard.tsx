@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config/api";
 
 import ImageProject from "../components/ImageProject";
-import PoseProject from "../components/poseProject";
+import PoseProject from "../components/PoseProject";
 
 // Importa los estilos del Dashboard
 import "../styles/Dashboard.css";
