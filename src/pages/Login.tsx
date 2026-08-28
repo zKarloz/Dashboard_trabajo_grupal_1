@@ -21,15 +21,28 @@ function Login() {
     // Indica si ya se solicitó el código OTP
     const [otpEnviado, setOtpEnviado] = useState(false);
 
+    // Guarda mensajes enviados por el backend
+    const [mensaje, setMensaje] = useState("");
+
+    // Evita presionar varias veces mientras se procesa una petición
+    const [cargando, setCargando] = useState(false);
+
     // Permite redirigir al usuario a otra ruta
     const navigate = useNavigate();
 
     // Función para solicitar el código OTP al backend
     const enviarOtp = async () => {
+        if (!email.trim()) {
+            setMensaje("Ingresa tu correo electrónico");
+            return;
+        }
 
-        // Envía el correo al servidor Flask
-        await fetch(`${API_URL}/send-otp`, 
-            {
+        setCargando(true);
+        setMensaje("");
+
+        try {
+            // Envía el correo al servidor Flask
+            const respuesta = await fetch(`${API_URL}/send-otp`, {
                 // Indica que se enviarán datos al servidor
                 method: "POST",
 
@@ -38,48 +51,77 @@ function Login() {
                     "Content-Type": "application/json"
                 },
                 // Convierte el correo a JSON y lo envía al backend
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email: email.trim().toLowerCase() })
             });
 
-        // Muestra el campo para ingresar el código OTP
-        setOtpEnviado(true);
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(datos.message);
+            }
+
+            // Muestra el campo solamente cuando el correo fue enviado
+            setEmail(email.trim().toLowerCase());
+            setOtpEnviado(true);
+            setMensaje(datos.message);
+        }
+        catch (error) {
+            setMensaje(
+                error instanceof Error
+                    ? error.message
+                    : "No se pudo enviar el código"
+            );
+        }
+        finally {
+            setCargando(false);
+        }
     };
 
     // Función para verificar el código OTP
     const verificarOtp = async () => {
+        setCargando(true);
+        setMensaje("");
 
-        // Envía el correo y el código al backend para verificarlos
-        const respuesta = await fetch(
-            `${API_URL}/verify-otp`,
-            {
-                method: "POST",
+        try {
+            // Envía el correo y el código al backend para verificarlos
+            const respuesta = await fetch(
+                `${API_URL}/verify-otp`,
+                {
+                    method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                // Envía correo y código en formato JSON
-                body: JSON.stringify({
-                    email,
-                    codigo
-                })
-            }
-        );
-        // Convierte la respuesta del servidor a JSON
-        const datos = await respuesta.json();
-
-        // Comprueba si el backend indicó que el código es correcto
-        if (datos.success) {
-            // Guarda una sesión básica en el navegador
-            localStorage.setItem(
-                "dashboard_logged_in",
-                "true"
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    // Envía correo y código en formato JSON
+                    body: JSON.stringify({
+                        email,
+                        codigo
+                    })
+                }
             );
+
+            // Convierte la respuesta del servidor a JSON
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.success) {
+                throw new Error(datos.message);
+            }
+
+            // Guarda una sesión básica en el navegador
+            localStorage.setItem("dashboard_logged_in", "true");
+
             // Redirige al Dashboard
             navigate("/dashboard");
         }
-        else {
-            // Muestra un mensaje si el código es incorrecto
-            alert("Código incorrecto");
+        catch (error) {
+            setMensaje(
+                error instanceof Error
+                    ? error.message
+                    : "No se pudo verificar el código"
+            );
+        }
+        finally {
+            setCargando(false);
         }
     };
     return(
@@ -97,10 +139,15 @@ function Login() {
 
                 // Actualiza email cuando el usuario escribe
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={otpEnviado || cargando}
             />
 
             {/* Ejecuta enviarOtp al presionar el botón */}
-            <button onClick={enviarOtp}>Enviar código OTP</button>
+            {!otpEnviado && (
+                <button onClick={enviarOtp} disabled={cargando}>
+                    {cargando ? "Enviando..." : "Enviar código OTP"}
+                </button>
+            )}
 
             {/* Solo se muestra después de enviar el OTP */}
             {otpEnviado && (
@@ -114,13 +161,27 @@ function Login() {
                         value={codigo}
 
                         // Actualiza codigo cuando el usuario escribe
-                        onChange={(e) => setCodigo(e.target.value)}
+                        onChange={(e) => {
+                            const valor = e.target.value.replace(/\D/g, "");
+                            setCodigo(valor);
+                        }}
+                        maxLength={6}
+                        inputMode="numeric"
+                        disabled={cargando}
                     />
 
                     {/* Ejecuta la verificación del código */}
-                    <button onClick={verificarOtp}>Verificar código</button>
+                    <button
+                        onClick={verificarOtp}
+                        disabled={cargando || codigo.length !== 6}
+                    >
+                        {cargando ? "Verificando..." : "Verificar código"}
+                    </button>
                 </>
             )}
+
+            {/* Muestra mensajes de éxito o error */}
+            {mensaje && <p className="login-message">{mensaje}</p>}
         </section>
     );
 }

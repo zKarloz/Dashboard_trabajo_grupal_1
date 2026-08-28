@@ -30,3 +30,14 @@
 .login-page button {
     width: 100%;
 }
+
+.login-page button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.login-message {
+    margin: 0;
+    text-align: center;
+    color: #475569;
+}
