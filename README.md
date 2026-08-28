@@ -25,6 +25,11 @@ Antes de ejecutar el proyecto, instalar:
 
 Para clonar el repositorio por primera vez:
 
+```bash
+git clone https://github.com/zKarloz/Dashboard_trabajo_grupal_1.git
+cd Dashboard_trabajo_grupal_1
+```
+
 ### Frontend
 
 Abrir una primera terminal en VSCode (Usar CMD/Command Prompt)
@@ -61,7 +66,3 @@ Abrir una segunda terminal en VSCode (No usar PowerShell)
 7. Iniciar servidor:
 
 `python app.py`
-
-```bash
-git clone https://github.com/zKarloz/Dashboard_trabajo_grupal_1.git
-cd Dashboard_trabajo_grupal_1
