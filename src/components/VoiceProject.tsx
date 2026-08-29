@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/TeachableProjects.css";
 
-// Types for the globals injected by the tfjs / speech-commands <script> tags.
-// Install the scripts in your index.html (o cárgalos dinámicamente):
-//   https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js
-//   https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js
 declare global {
   interface Window {
     speechCommands: any;
@@ -30,17 +26,16 @@ export default function TeachableMachineAudio() {
   }, []);
 
   const createModel = async () => {
-    const checkpointURL = URL + "model.json"; // model topology
-    const metadataURL = URL + "metadata.json"; // model metadata
+    const checkpointURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
 
     const recognizer = window.speechCommands.create(
-      "BROWSER_FFT", // fourier transform type, not useful to change
-      undefined, // speech commands vocabulary feature, not useful for your models
+      "BROWSER_FFT",
+      undefined,
       checkpointURL,
       metadataURL
     );
 
-    // check that model and metadata are loaded via HTTPS requests.
     await recognizer.ensureModelLoaded();
     return recognizer;
   };
@@ -57,7 +52,7 @@ export default function TeachableMachineAudio() {
       const recognizer = await createModel();
       recognizerRef.current = recognizer;
 
-      const classLabels: string[] = recognizer.wordLabels(); // get class labels
+      const classLabels: string[] = recognizer.wordLabels();
 
       // Crear un div por clase, igual que el original.
       const container = labelContainerRef.current;
@@ -68,9 +63,6 @@ export default function TeachableMachineAudio() {
         }
       }
 
-      // listen() takes two arguments:
-      // 1. A callback function that is invoked anytime a word is recognized.
-      // 2. A configuration object with adjustable fields
       recognizer.listen(
         (result: { scores: Float32Array | number[] }) => {
           if (!mountedRef.current) return;
@@ -91,15 +83,12 @@ export default function TeachableMachineAudio() {
           }
         },
         {
-          includeSpectrogram: true, // in case listen should return result.spectrogram
+          includeSpectrogram: true,
           probabilityThreshold: 0.75,
           invokeCallbackOnNoiseAndUnknown: true,
-          overlapFactor: 0.5, // probably want between 0.5 and 0.75. More info in README
+          overlapFactor: 0.5,
         }
       );
-
-      // Stop the recognition in 5 seconds.
-      // setTimeout(() => recognizer.stopListening(), 5000);
 
       setIsRunning(true);
     } catch (err) {
@@ -115,8 +104,7 @@ export default function TeachableMachineAudio() {
       <h2>Reconocimiento de comandos de voz</h2>
 
       <p>
-        Activa el micrófono y pronuncia uno de los comandos utilizados para
-        entrenar el modelo.
+        Activa el micrófono y prueba con palabras típicas de saludo y despedida.
       </p>
     </header>
 

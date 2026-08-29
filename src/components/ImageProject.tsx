@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/TeachableProjects.css";
 
-// Types for the globals injected by the tfjs / teachablemachine-image <script> tags.
-// Install the scripts in your index.html (or load them dynamically):
-//   https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js
-//   https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js
 declare global {
   interface Window {
     tmImage: any;
@@ -29,7 +25,6 @@ export default function TeachableMachineImage() {
 
   const [isRunning, setIsRunning] = useState(false);
 
-  // Clean up the animation loop and webcam stream on unmount.
   useEffect(() => {
     mountedRef.current = true;
     return () => {
@@ -44,7 +39,6 @@ export default function TeachableMachineImage() {
     const webcam = webcamRef.current;
     if (!model || !webcam) return;
 
-    // predict can take in an image, video or canvas html element
     const prediction: Prediction[] = await model.predict(webcam.canvas);
 
     // Actualizamos el DOM directamente (como en el original) en vez de usar
@@ -69,11 +63,6 @@ export default function TeachableMachineImage() {
       // en silencio: la cámara sigue viva pero las predicciones se congelan.
       console.error("Error en el loop de predicción:", err);
     } finally {
-      // Solo reprogramamos si el componente sigue montado. Si te fuiste de
-      // la página mientras predict() estaba en vuelo, cancelAnimationFrame
-      // en el cleanup no alcanza a cancelar ESTE frame (ya se está
-      // ejecutando), así que sin este chequeo el loop seguiría vivo para
-      // siempre después de desmontar.
       if (mountedRef.current) {
         rafRef.current = window.requestAnimationFrame(loop);
       }

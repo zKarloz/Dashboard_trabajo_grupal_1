@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/TeachableProjects.css";
 
-// Types for the globals injected by the tfjs / teachablemachine-pose <script> tags.
-// Install the scripts in your index.html (or load them dynamically, see loadScript below):
-//   https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js
-//   https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js
 declare global {
   interface Window {
     tmPose: any;
@@ -30,7 +26,6 @@ export default function TeachableMachinePose() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
-  // Clean up the animation loop and webcam stream on unmount.
   useEffect(() => {
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
@@ -57,9 +52,7 @@ export default function TeachableMachinePose() {
     const webcam = webcamRef.current;
     if (!model || !webcam) return;
 
-    // Prediction #1: run input through posenet.
     const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
-    // Prediction #2: run input through the teachable machine classifier.
     const prediction: Prediction[] = await model.predict(posenetOutput);
 
     setPredictions(prediction);
@@ -83,19 +76,16 @@ export default function TeachableMachinePose() {
     const modelURL = URL + "model.json";
     const metadataURL = URL + "metadata.json";
 
-    // Load the model and metadata.
     const model = await window.tmPose.load(modelURL, metadataURL);
     modelRef.current = model;
     setMaxPredictions(model.getTotalClasses());
 
-    // Set up the webcam.
     const flip = true;
     const webcam = new window.tmPose.Webcam(SIZE, SIZE, flip);
     await webcam.setup();
     await webcam.play();
     webcamRef.current = webcam;
 
-    // Set up the canvas.
     const canvas = canvasRef.current;
     if (canvas) {
       canvas.width = SIZE;
