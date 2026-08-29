@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import "../styles/TeachableProjects.css";
 
 // Types for the globals injected by the tfjs / teachablemachine-pose <script> tags.
 // Install the scripts in your index.html (or load them dynamically, see loadScript below):
@@ -107,21 +108,76 @@ export default function TeachableMachinePose() {
   };
 
   return (
-    <div>
-      <div>Teachable Machine Pose Model</div>
-      <button type="button" onClick={init} disabled={isRunning}>
-        Start
-      </button>
-      <div>
-        <canvas ref={canvasRef} />
+  <section className="tm-project tm-project--pose">
+    <header className="tm-project__header">
+      <span className="tm-project__badge">Proyecto de postura</span>
+
+      <h2>Detección de posturas</h2>
+
+      <p>
+        El modelo analizará tu posición corporal, dibujará los puntos de
+        referencia y mostrará la postura detectada.
+      </p>
+    </header>
+
+    <div className="tm-project__content">
+      <div className="tm-project__card">
+        <div className="tm-project__card-header">
+          <h3>Detección corporal</h3>
+
+          <span className={`tm-status ${isRunning ? "is-active" : ""}`}>
+            <span className="tm-status__dot" />
+
+            {isRunning ? "Detección activa" : "Detección inactiva"}
+          </span>
+        </div>
+
+        <div className="tm-media">
+          {!isRunning && (
+            <div className="tm-placeholder">
+              Colócate frente a la cámara y presiona el botón para comenzar.
+            </div>
+          )}
+
+          <canvas ref={canvasRef} />
+        </div>
+
+        <button
+          className="tm-project__button"
+          type="button"
+          onClick={init}
+          disabled={isRunning}
+        >
+          {isRunning ? "Modelo funcionando" : "Iniciar detección"}
+        </button>
       </div>
-      <div id="label-container">
-        {predictions.slice(0, maxPredictions).map((p, i) => (
-          <div key={i}>
-            {p.className}: {p.probability.toFixed(2)}
-          </div>
-        ))}
-      </div>
+
+      <aside className="tm-project__card">
+        <div className="tm-project__card-header">
+          <h3>Probabilidad por postura</h3>
+        </div>
+
+        <p className="tm-results-description">
+          Cada resultado indica qué tan seguro está el modelo de la postura
+          observada.
+        </p>
+
+        {!isRunning && (
+          <p className="tm-results-empty">
+            Activa la cámara para mostrar las predicciones.
+          </p>
+        )}
+
+        <div id="label-container" className="tm-labels">
+          {predictions.slice(0, maxPredictions).map((prediction, index) => (
+            <div key={index}>
+              {prediction.className}:{" "}
+              {(prediction.probability * 100).toFixed(1)}%
+            </div>
+          ))}
+        </div>
+      </aside>
     </div>
-  );
+  </section>
+);
 }

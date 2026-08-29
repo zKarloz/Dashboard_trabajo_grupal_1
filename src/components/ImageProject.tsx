@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import "../styles/TeachableProjects.css";
 
 // Types for the globals injected by the tfjs / teachablemachine-image <script> tags.
 // Install the scripts in your index.html (or load them dynamically):
@@ -118,13 +119,77 @@ export default function TeachableMachineImage() {
   };
 
   return (
-    <div>
-      <div>Teachable Machine Image Model</div>
-      <button type="button" onClick={init} disabled={isRunning}>
-        Start
-      </button>
-      <div id="webcam-container" ref={webcamContainerRef} />
-      <div id="label-container" ref={labelContainerRef} />
+  <section className="tm-project tm-project--image">
+    <header className="tm-project__header">
+      <span className="tm-project__badge">Proyecto de imagen</span>
+
+      <h2>Clasificación de imágenes</h2>
+
+      <p>
+        Activa la cámara para que el modelo analice la imagen y muestre la
+        probabilidad correspondiente a cada clase.
+      </p>
+    </header>
+
+    <div className="tm-project__content">
+      <div className="tm-project__card">
+        <div className="tm-project__card-header">
+          <h3>Vista de la cámara</h3>
+
+          <span className={`tm-status ${isRunning ? "is-active" : ""}`}>
+            <span className="tm-status__dot" />
+
+            {isRunning ? "Cámara activa" : "Cámara inactiva"}
+          </span>
+        </div>
+
+        <div className="tm-media">
+          {!isRunning && (
+            <div className="tm-placeholder">
+              Presiona el botón para activar la cámara e iniciar el modelo.
+            </div>
+          )}
+
+          <div
+            id="webcam-container"
+            className="tm-webcam-mount"
+            ref={webcamContainerRef}
+          />
+        </div>
+
+        <button
+          className="tm-project__button"
+          type="button"
+          onClick={init}
+          disabled={isRunning}
+        >
+          {isRunning ? "Modelo funcionando" : "Activar cámara"}
+        </button>
+      </div>
+
+      <aside className="tm-project__card">
+        <div className="tm-project__card-header">
+          <h3>Resultados</h3>
+        </div>
+
+        <p className="tm-results-description">
+          Las probabilidades se actualizarán automáticamente mientras la
+          cámara esté activa.
+        </p>
+
+        {!isRunning && (
+          <p className="tm-results-empty">
+            Todavía no hay predicciones disponibles.
+          </p>
+        )}
+
+        <div
+          id="label-container"
+          className="tm-labels"
+          ref={labelContainerRef}
+        />
+      </aside>
     </div>
-  );
+  </section>
+);
 }
