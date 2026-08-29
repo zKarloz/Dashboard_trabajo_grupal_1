@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-const URL = `${import.meta.env.BASE_URL}voice_model/`;
+const URL = `${window.location.origin}${import.meta.env.BASE_URL}voice_model/`;
 
 export default function TeachableMachineAudio() {
   const labelContainerRef = useRef<HTMLDivElement>(null);
