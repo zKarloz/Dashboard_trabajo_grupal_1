@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-const URL = `${import.meta.env.BASE_URL}image_model/`;
+const URL = "./my_model/";
 const SIZE = 200;
 
 interface Prediction {
@@ -24,12 +24,15 @@ export default function TeachableMachineImage() {
   const modelRef = useRef<any>(null);
   const webcamRef = useRef<any>(null);
   const rafRef = useRef<number | null>(null);
+  const mountedRef = useRef(true);
 
   const [isRunning, setIsRunning] = useState(false);
 
   // Clean up the animation loop and webcam stream on unmount.
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       webcamRef.current?.stop?.();
     };
@@ -65,7 +68,14 @@ export default function TeachableMachineImage() {
       // en silencio: la cámara sigue viva pero las predicciones se congelan.
       console.error("Error en el loop de predicción:", err);
     } finally {
-      rafRef.current = window.requestAnimationFrame(loop);
+      // Solo reprogramamos si el componente sigue montado. Si te fuiste de
+      // la página mientras predict() estaba en vuelo, cancelAnimationFrame
+      // en el cleanup no alcanza a cancelar ESTE frame (ya se está
+      // ejecutando), así que sin este chequeo el loop seguiría vivo para
+      // siempre después de desmontar.
+      if (mountedRef.current) {
+        rafRef.current = window.requestAnimationFrame(loop);
+      }
     }
   };
 
