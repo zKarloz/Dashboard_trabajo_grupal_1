@@ -20,12 +20,11 @@ interface Prediction {
 
 export default function TeachableMachineImage() {
   const webcamContainerRef = useRef<HTMLDivElement>(null);
+  const labelContainerRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<any>(null);
   const webcamRef = useRef<any>(null);
   const rafRef = useRef<number | null>(null);
 
-  const [maxPredictions, setMaxPredictions] = useState(0);
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   // Clean up the animation loop and webcam stream on unmount.
@@ -43,13 +42,31 @@ export default function TeachableMachineImage() {
 
     // predict can take in an image, video or canvas html element
     const prediction: Prediction[] = await model.predict(webcam.canvas);
-    setPredictions(prediction);
+
+    // Actualizamos el DOM directamente (como en el original) en vez de usar
+    // setState, para no forzar un re-render de React en cada frame.
+    const container = labelContainerRef.current;
+    if (container) {
+      prediction.forEach((p, i) => {
+        const node = container.childNodes[i] as HTMLDivElement | undefined;
+        if (node) {
+          node.textContent = `${p.className}: ${p.probability.toFixed(2)}`;
+        }
+      });
+    }
   };
 
   const loop = async () => {
-    webcamRef.current?.update();
-    await predict();
-    rafRef.current = window.requestAnimationFrame(loop);
+    try {
+      webcamRef.current?.update();
+      await predict();
+    } catch (err) {
+      // Sin este catch, un error acá mata la cadena de requestAnimationFrame
+      // en silencio: la cámara sigue viva pero las predicciones se congelan.
+      console.error("Error en el loop de predicción:", err);
+    } finally {
+      rafRef.current = window.requestAnimationFrame(loop);
+    }
   };
 
   const init = async () => {
@@ -66,7 +83,6 @@ export default function TeachableMachineImage() {
     // Load the model and metadata.
     const model = await window.tmImage.load(modelURL, metadataURL);
     modelRef.current = model;
-    setMaxPredictions(model.getTotalClasses());
 
     // Set up the webcam.
     const flip = true;
@@ -77,6 +93,15 @@ export default function TeachableMachineImage() {
 
     // Append the webcam canvas to the DOM.
     webcamContainerRef.current?.appendChild(webcam.canvas);
+
+    // Crear un div por clase, igual que el original.
+    const container = labelContainerRef.current;
+    if (container) {
+      container.innerHTML = "";
+      for (let i = 0; i < model.getTotalClasses(); i++) {
+        container.appendChild(document.createElement("div"));
+      }
+    }
 
     setIsRunning(true);
     rafRef.current = window.requestAnimationFrame(loop);
@@ -89,13 +114,7 @@ export default function TeachableMachineImage() {
         Start
       </button>
       <div id="webcam-container" ref={webcamContainerRef} />
-      <div id="label-container">
-        {predictions.slice(0, maxPredictions).map((p, i) => (
-          <div key={i}>
-            {p.className}: {p.probability.toFixed(2)}
-          </div>
-        ))}
-      </div>
+      <div id="label-container" ref={labelContainerRef} />
     </div>
   );
 }
