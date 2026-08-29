@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-const URL = "./my_model/";
+const URL = `${import.meta.env.BASE_URL}image_model/`;
 const SIZE = 200;
 
 interface Prediction {
