@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Importa Flask para crear el servidor
 # request permite recibir datos enviados desde React
 # jsonify convierte respuestas de Python a JSON
