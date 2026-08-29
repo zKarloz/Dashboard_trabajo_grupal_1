@@ -116,6 +116,9 @@ function Dashboard() {
                 {/* Cambia la herramienta seleccionada a Proyecto de Posturas */}
                 <button onClick={() => setHerramienta("posturas")}>Proyecto de Posturas</button>
 
+                {/* Cambia la herramienta seleccionada a Proyecto de Voz */}
+                <button onClick={() => setHerramienta("voz")}>Proyecto de Voz</button>
+
                 {/* Cierra la sesión */}
                 <button onClick={cerrarSesion}>Cerrar sesión</button>
             </aside>
