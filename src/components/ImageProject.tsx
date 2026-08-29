@@ -80,18 +80,15 @@ export default function TeachableMachineImage() {
     const modelURL = URL + "model.json";
     const metadataURL = URL + "metadata.json";
 
-    // Load the model and metadata.
     const model = await window.tmImage.load(modelURL, metadataURL);
     modelRef.current = model;
 
-    // Set up the webcam.
     const flip = true;
     const webcam = new window.tmImage.Webcam(SIZE, SIZE, flip);
     await webcam.setup();
     await webcam.play();
     webcamRef.current = webcam;
 
-    // Append the webcam canvas to the DOM.
     webcamContainerRef.current?.appendChild(webcam.canvas);
 
     // Crear un div por clase, igual que el original.
