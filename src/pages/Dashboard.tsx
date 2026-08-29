@@ -9,6 +9,7 @@ import { API_URL } from "../config/api";
 
 import ImageProject from "../components/ImageProject";
 import PoseProject from "../components/PoseProject";
+import VoiceProject from "../components/VoiceProject";
 
 // Importa los estilos del Dashboard
 import "../styles/Dashboard.css";
@@ -245,6 +246,10 @@ function Dashboard() {
 
                 {herramienta === "posturas" && (
                     <PoseProject />
+                )}
+
+                {herramienta === "voz" && (
+                    <VoiceProject />
                 )}
 
             </section>
