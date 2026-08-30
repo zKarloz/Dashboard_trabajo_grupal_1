@@ -125,19 +125,39 @@ function Login() {
         }
     };
     return(
-        // Contenedor principal del Login
-        <section className="login-page">
-
+         <section className="login-page">
             <h2>Iniciar sesión</h2>
+
+            {/* Información para que el profesor pueda acceder */}
+            <div className="demo-access">
+                <strong>Acceso de demostración</strong>
+
+                <p>
+                    Correo: <span>profesor@demo.local</span>
+                </p>
+
+                <p>
+                    Código: <span>123456</span>
+                </p>
+
+                {/* Coloca automáticamente el correo de demostración */}
+                <button
+                    type="button"
+                    onClick={() => {
+                        setEmail("profesor@demo.local");
+                        setMensaje("");
+                    }}
+                    disabled={otpEnviado || cargando}
+                >
+                    Usar cuenta de demostración
+                </button>
+            </div>
+
             {/* Campo para ingresar el correo */}
             <input
                 type="email"
                 placeholder="Correo electrónico"
-
-                // Muestra el valor guardado en email
                 value={email}
-
-                // Actualiza email cuando el usuario escribe
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={otpEnviado || cargando}
             />
@@ -152,15 +172,10 @@ function Login() {
             {/* Solo se muestra después de enviar el OTP */}
             {otpEnviado && (
                 <>
-                    {/* Campo para ingresar el código recibido */}
                     <input
                         type="text"
                         placeholder="Código OTP"
-
-                        // Muestra el código guardado
                         value={codigo}
-
-                        // Actualiza codigo cuando el usuario escribe
                         onChange={(e) => {
                             const valor = e.target.value.replace(/\D/g, "");
                             setCodigo(valor);
@@ -170,7 +185,6 @@ function Login() {
                         disabled={cargando}
                     />
 
-                    {/* Ejecuta la verificación del código */}
                     <button
                         onClick={verificarOtp}
                         disabled={cargando || codigo.length !== 6}

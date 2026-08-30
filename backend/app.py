@@ -1,6 +1,14 @@
+# Permite leer variables de entorno
+import os
+
+# Permite cargar las variables del archivo .env
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Correo y código para el acceso de demostración
+DEMO_EMAIL = os.getenv("DEMO_EMAIL", "").strip().lower()
+DEMO_OTP = os.getenv("DEMO_OTP", "").strip()
 
 # Importa Flask para crear el servidor
 # request permite recibir datos enviados desde React
@@ -19,17 +27,14 @@ import secrets
 # Permite controlar la expiración del código OTP
 import time
 
-# Importa la función encargada del procesamiento con Pandas
+# Importa los servicios del dashboard
 from pandas_service import procesar_pandas
-
-# Importa la función encargada de los cálculos con NumPy
 from numpy_service import procesar_numpy
-
-# Importa la función encargada de generar el gráfico
 from matplotlib_service import crear_grafico
 
 # Importa el servicio encargado de enviar correos con Resend
 from email_service import enviar_codigo_otp
+
 
 # Crea la aplicación Flask
 app = Flask(__name__)
@@ -44,6 +49,7 @@ otps = {}
 DURACION_OTP = 300
 MAXIMO_INTENTOS = 5
 
+
 # Permite comprobar que el backend está funcionando
 @app.route("/", methods=["GET"])
 def inicio():
@@ -52,10 +58,10 @@ def inicio():
         "message": "Backend funcionando correctamente"
     })
 
+
 # Crea la ruta POST /send-otp
 @app.route("/send-otp", methods=["POST"])
 def send_otp():
-
     # Obtiene el JSON enviado desde React
     data = request.get_json(silent=True) or {}
 
@@ -69,18 +75,31 @@ def send_otp():
             "message": "Ingresa un correo electrónico válido"
         }), 400
 
-    # Genera un código de 6 dígitos, incluyendo posibles ceros iniciales
-    codigo = f"{secrets.randbelow(1_000_000):06d}"
+    # Comprueba si se está utilizando la cuenta de demostración
+    es_demo = bool(
+        DEMO_EMAIL
+        and DEMO_OTP
+        and email == DEMO_EMAIL
+    )
 
-    try:
-        # Envía el código por correo antes de guardarlo
-        enviar_codigo_otp(email, codigo)
-    except Exception:
-        app.logger.exception("No se pudo enviar el código OTP")
-        return jsonify({
-            "success": False,
-            "message": "No se pudo enviar el código por correo"
-        }), 502
+    # En modo demo utiliza el código configurado.
+    # Para los demás correos genera un código aleatorio.
+    if es_demo:
+        codigo = DEMO_OTP
+    else:
+        codigo = f"{secrets.randbelow(1_000_000):06d}"
+
+        try:
+            # Envía el código real mediante Resend
+            enviar_codigo_otp(email, codigo)
+
+        except Exception:
+            app.logger.exception("No se pudo enviar el código OTP")
+
+            return jsonify({
+                "success": False,
+                "message": "No se pudo enviar el código por correo"
+            }), 502
 
     # Guarda el código, su expiración y los intentos realizados
     otps[email] = {
@@ -89,16 +108,25 @@ def send_otp():
         "intentos": 0
     }
 
-    # Devuelve una respuesta JSON a React
+    # Devuelve un mensaje diferente según el tipo de acceso
+    if es_demo:
+        return jsonify({
+            "success": True,
+            "message": (
+                "Modo demostración activado. "
+                "Utiliza el código mostrado en el login."
+            )
+        })
+
     return jsonify({
         "success": True,
         "message": "Código enviado correctamente"
     })
 
+
 # Crea la ruta POST /verify-otp
 @app.route("/verify-otp", methods=["POST"])
 def verify_otp():
-
     # Obtiene los datos enviados desde React
     data = request.get_json(silent=True) or {}
 
@@ -120,6 +148,7 @@ def verify_otp():
     # Elimina el código si ya venció
     if time.time() > registro["expira"]:
         otps.pop(email, None)
+
         return jsonify({
             "success": False,
             "message": "El código ha vencido"
@@ -127,11 +156,9 @@ def verify_otp():
 
     # Compara el código guardado con el código recibido
     if secrets.compare_digest(registro["codigo"], codigo):
-
         # El código solamente puede utilizarse una vez
         otps.pop(email, None)
 
-        # Si coinciden, indica que el acceso es correcto
         return jsonify({
             "success": True,
             "message": "Código verificado correctamente"
@@ -142,21 +169,21 @@ def verify_otp():
 
     if registro["intentos"] >= MAXIMO_INTENTOS:
         otps.pop(email, None)
+
         return jsonify({
             "success": False,
             "message": "Demasiados intentos. Solicita otro código"
         }), 400
 
-    # Si no coinciden, indica que el acceso falló
     return jsonify({
         "success": False,
         "message": "Código incorrecto"
     }), 400
 
+
 # Crea la ruta POST /analyze
 @app.route("/analyze", methods=["POST"])
 def analyze():
-
     # Obtiene el archivo CSV enviado desde React
     archivo = request.files["file"]
 
@@ -164,7 +191,6 @@ def analyze():
     df = pd.read_csv(archivo)
 
     # Procesa el DataFrame con Pandas
-    # Devuelve los datos originales y los datos limpios
     original, limpio = procesar_pandas(df)
 
     # Calcula estadísticas usando NumPy
@@ -181,8 +207,7 @@ def analyze():
         "grafico": grafico
     })
 
+
 # Comprueba que app.py se esté ejecutando directamente
 if __name__ == "__main__":
-
-    # Inicia el servidor Flask en modo desarrollo
     app.run(debug=True)
