@@ -126,10 +126,19 @@ function Dashboard() {
             {/* Contenido principal del Dashboard */}
             <section className="dashboard-content">
 
-                <h2>Análisis de CSV</h2>
+                {/* La carga de CSV solo aparece en las herramientas de análisis de datos */}
+                {["pandas", "numpy", "matplotlib"].includes(herramienta) && (
+                    <>
+                        <h2>Análisis de CSV</h2>
 
-                {/* Permite seleccionar únicamente archivos CSV, ejecuta subirArchivo al seleccionar un archivo */}
-                <input type="file" accept=".csv" onChange={subirArchivo}/>
+                        {/* Permite seleccionar únicamente archivos CSV, ejecuta subirArchivo al seleccionar un archivo */}
+                        <input
+                            type="file"
+                            accept=".csv"
+                            onChange={subirArchivo}
+                        />
+                    </>
+                )}
 
                 {/* Muestra esta sección solo si se seleccionó Pandas */}
                 {herramienta === "pandas" && (
