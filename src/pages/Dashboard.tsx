@@ -172,13 +172,11 @@ function Dashboard() {
                 {herramienta === "pandas" && (
                     <div>
                         <h3>Pandas</h3>
-                        
-                        <h4>Información del dataset</h4>
 
                         {datos.length > 0 && (
                             <div className="dataset-info">
 
-                                <div className="dataset-card">
+                                <div className="dataset-card filas-card">
 
                                     <span className="dataset-label">
                                         Filas
@@ -195,7 +193,7 @@ function Dashboard() {
                                 </div>
 
 
-                                <div className="dataset-card">
+                                <div className="dataset-card columnas-card">
 
                                     <span className="dataset-label">
                                         Columnas
@@ -212,7 +210,7 @@ function Dashboard() {
                                 </div>
 
 
-                                <div className="dataset-card">
+                                <div className="dataset-card nulos-card">
 
                                     <span className="dataset-label">
                                         Valores nulos
@@ -305,15 +303,16 @@ function Dashboard() {
                             </div>
                         )}
 
-                        <br />
+                        {datos.length > 0 && (
+                            <>
+                                <br />
+                                {/* Muestra nuevamente los datos originales */}
+                                <button onClick={() => setLimpio(false)}>Mostrar original</button>
 
-                        {/* Muestra nuevamente los datos originales */}
-                        <button onClick={() => setLimpio(false)}>Mostrar original</button>
-
-                        {/* Muestra los datos limpios */}
-                        <button onClick={() => setLimpio(true)}>Limpiar datos</button>
-
-                        <h4>Datos del CSV</h4>
+                                {/* Muestra los datos limpios */}
+                                <button onClick={() => setLimpio(true)}>Limpiar datos</button>
+                            </>
+                        )}
 
                         {/* Comprueba que existan datos para mostrar */}
                         {tabla.length > 0 ? (
