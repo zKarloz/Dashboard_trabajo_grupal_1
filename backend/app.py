@@ -30,7 +30,7 @@ import time
 # Importa los servicios del dashboard
 from pandas_service import procesar_pandas
 from numpy_service import procesar_numpy
-from matplotlib_service import crear_grafico
+from matplotlib_service import crear_graficos
 
 # Importa el servicio encargado de enviar correos con Resend
 from email_service import enviar_codigo_otp
@@ -191,20 +191,24 @@ def analyze():
     df = pd.read_csv(archivo)
 
     # Procesa el DataFrame con Pandas
-    original, limpio = procesar_pandas(df)
+    (original, limpio, filas, columnas, nulos, resumen) = procesar_pandas(df)
 
     # Calcula estadísticas usando NumPy
     estadisticas = procesar_numpy(df)
 
-    # Genera un gráfico usando Matplotlib
-    grafico = crear_grafico(df)
+    # Genera gráficos usando Matplotlib
+    graficos = crear_graficos(df)
 
     # Devuelve todos los resultados a React
     return jsonify({
         "original": original,
         "limpio": limpio,
+        "filas": filas,
+        "columnas": columnas,
+        "nulos": nulos,
+        "resumen": resumen,
         "estadisticas": estadisticas,
-        "grafico": grafico
+        "graficos": graficos
     })
 
 

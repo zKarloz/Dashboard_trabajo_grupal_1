@@ -16,6 +16,14 @@ import "../styles/Dashboard.css";
 
 function Dashboard() {
 
+    // Guarda la cantidad de filas y columnas del CSV
+    const [filas, setFilas] = useState(0);
+    const [columnas, setColumnas] = useState(0);
+
+    // Guarda la cantidad de valores nulos y el resumen del CSV
+    const [nulos, setNulos] = useState<any>({});
+    const [resumen, setResumen] = useState<any>({});
+
     // Guarda qué herramienta está seleccionada
     const [herramienta, setHerramienta] = useState("pandas");
 
@@ -29,7 +37,9 @@ function Dashboard() {
     const [estadisticas, setEstadisticas] = useState<any>({});
 
     // Guarda la imagen del gráfico generada por Matplotlib
-    const [grafico, setGrafico] = useState("");
+    const [graficos, setGraficos] = useState<any>({});
+
+    const [tipoGrafico, setTipoGrafico] = useState("barras");
 
     // Indica si se muestran los datos originales o los limpios
     const [limpio, setLimpio] = useState(false);
@@ -80,11 +90,23 @@ function Dashboard() {
         // Guarda los datos limpios recibidos
         setDatosLimpios(resultado.limpio);
 
+        // Guarda la cantidad de filas y columnas recibidas
+        setFilas(resultado.filas);
+
+        // Guarda la cantidad de columnas recibidas
+        setColumnas(resultado.columnas);
+
+        // Guarda la cantidad de valores nulos recibidos
+        setNulos(resultado.nulos);
+
+        // Guarda el resumen de los datos recibidos
+        setResumen(resultado.resumen);
+
         // Guarda los resultados de NumPy
         setEstadisticas(resultado.estadisticas);
 
         // Guarda el gráfico generado por Matplotlib
-        setGrafico(resultado.grafico);
+        setGraficos(resultado.graficos);
 
         // Empieza mostrando la tabla original
         setLimpio(false);
@@ -145,6 +167,73 @@ function Dashboard() {
                     <div>
                         <h3>Pandas</h3>
                         
+                        {datos.length > 0 && (
+                            <div className="pandas-info">
+
+                                <h4>Información del dataset</h4>
+
+                                <p>Filas: {filas}</p>
+                                <p>Columnas: {columnas}</p>
+
+                                <h4>Valores nulos</h4>
+
+                                {Object.entries(nulos).map(
+                                    ([columna, cantidad]: any) => (
+                                        <p key={columna}>
+                                            {columna}: {cantidad}
+                                        </p>
+                                    )
+                                )}
+
+                            </div>
+                        )}
+
+                        {Object.keys(resumen).length > 0 && (
+                            <div>
+
+                                <h4>Resumen estadístico</h4>
+
+                                <div className="tabla-container">
+
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Columna</th>
+                                                <th>Media</th>
+                                                <th>Mínimo</th>
+                                                <th>Máximo</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {Object.entries(resumen).map(
+                                                ([columna, valores]: any) => (
+
+                                                    <tr key={columna}>
+
+                                                        <td>{columna}</td>
+
+                                                        <td>
+                                                            {valores.mean}
+                                                        </td>
+
+                                                        <td>
+                                                            {valores.min}
+                                                        </td>
+
+                                                        <td>
+                                                            {valores.max}
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        )}
+
                         {/* Muestra nuevamente los datos originales */}
                         <button onClick={() => setLimpio(false)}>Mostrar original</button>
 
@@ -244,20 +333,57 @@ function Dashboard() {
 
                 {/* Muestra esta sección solo si se seleccionó Matplotlib */}
                 {herramienta === "matplotlib" && (
-
                     <div>
-                        <h3>Matplotlib</h3>
-                        {/* Comprueba si existe un gráfico */}
-                        {grafico ? (
 
-                            <div className="grafico-container">
-                                {/* Muestra la imagen enviada por Flask, Convierte el texto Base64 en una imagen */}
-                                <img className="grafico" src={`data:image/png;base64,${grafico}`} alt="Gráfico generado con Matplotlib"/>
-                            </div>
+                        <h3>Matplotlib</h3>
+
+                        {Object.keys(graficos).length > 0 ? (
+                            <>
+
+                                <button
+                                    onClick={() =>
+                                        setTipoGrafico("barras")
+                                    }
+                                >
+                                    Barras
+                                </button>
+
+                                <button
+                                    onClick={() =>
+                                        setTipoGrafico("histograma")
+                                    }
+                                >
+                                    Histograma
+                                </button>
+
+                                <button
+                                    onClick={() =>
+                                        setTipoGrafico("lineas")
+                                    }
+                                >
+                                    Líneas
+                                </button>
+
+
+                                <div className="grafico-container">
+
+                                    <img
+                                        className="grafico"
+                                        src={`data:image/png;base64,${
+                                            graficos[tipoGrafico]
+                                        }`}
+                                        alt="Gráfico generado con Matplotlib"
+                                    />
+
+                                </div>
+
+                            </>
                         ) : (
-                            // Mensaje si todavía no se cargó un CSV
-                            <p>Adjunta un CSV para generar el gráfico.</p>
+                            <p>
+                                Adjunta un CSV para generar los gráficos.
+                            </p>
                         )}
+
                     </div>
                 )}
 

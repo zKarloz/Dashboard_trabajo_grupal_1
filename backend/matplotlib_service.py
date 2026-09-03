@@ -1,79 +1,146 @@
-# Importa el módulo principal de Matplotlib
 import matplotlib
 
-# Usa Agg para generar imágenes sin abrir ventanas gráficas
+# Evita que Matplotlib abra ventanas gráficas
 matplotlib.use("Agg")
 
-# Importa pyplot para crear gráficos
 import matplotlib.pyplot as plt
-
-# Importa NumPy para identificar columnas numéricas
 import numpy as np
-
-# Permite crear archivos temporalmente en memoria
 import io
-
-# Permite convertir la imagen a texto Base64
 import base64
 
-# Función que recibe un DataFrame
-def crear_grafico(df):
 
-    # Selecciona únicamente las columnas numéricas
-    columnas_numericas = df.select_dtypes(include=np.number)
+# Convierte el gráfico actual a Base64
+def convertir_base64():
 
-    # Inicialmente no existe ningún gráfico
-    grafico = ""
+    imagen = io.BytesIO()
 
-    # Comprueba que exista al menos una columna numérica
+    plt.savefig(
+        imagen,
+        format="png"
+    )
+
+    plt.close()
+
+    imagen.seek(0)
+
+    return base64.b64encode(
+        imagen.getvalue()
+    ).decode("utf-8")
+
+
+def crear_graficos(df):
+
+    # Selecciona solamente las columnas numéricas
+    columnas_numericas = df.select_dtypes(
+        include=np.number
+    )
+
+    # Aquí se guardarán los gráficos
+    graficos = {
+        "barras": "",
+        "histograma": "",
+        "lineas": ""
+    }
+
+
+    # Verifica que exista al menos una columna numérica
     if len(columnas_numericas.columns) > 0:
 
-        # Guarda los nombres de las columnas
         columnas = columnas_numericas.columns
 
-        # Calcula el promedio de cada columna
+
+        # -------------------------
+        # GRÁFICO DE BARRAS
+        # -------------------------
+
         promedios = columnas_numericas.mean()
 
-        # Calcula un ancho dinámico según la cantidad de columnas
-        ancho = max(8, len(columnas) * 1.2)
+        ancho = max(
+            8,
+            len(columnas) * 1.2
+        )
 
-        # Crea el espacio del gráfico
-        plt.figure(figsize=(ancho, 5))
+        plt.figure(
+            figsize=(ancho, 5)
+        )
 
-        # Genera un gráfico de barras
-        plt.bar(columnas, promedios)
+        plt.bar(
+            columnas,
+            promedios
+        )
 
-        # Agrega un título
-        plt.title("Promedio por columna")
+        plt.title(
+            "Promedio por columna"
+        )
 
-        # Agrega nombre al eje horizontal
         plt.xlabel("Columnas")
-
-        # Agrega nombre al eje vertical
         plt.ylabel("Promedio")
 
-        # Rota los nombres de las columnas para evitar que se superpongan
-        plt.xticks(rotation=45, ha="right")
+        plt.xticks(
+            rotation=45,
+            ha="right"
+        )
 
-        # Ajusta automáticamente los elementos del gráfico
         plt.tight_layout()
 
-        # Crea un espacio en memoria para guardar la imagen
-        imagen = io.BytesIO()
+        graficos["barras"] = convertir_base64()
 
-        # Guarda el gráfico dentro de ese espacio como PNG
-        plt.savefig(imagen, format="png")
 
-        # Cierra el gráfico para liberar recursos
-        plt.close()
+        # -------------------------
+        # HISTOGRAMA
+        # -------------------------
 
-        # Regresa al inicio de la imagen guardada en memoria
-        imagen.seek(0)
+        primera_columna = columnas[0]
 
-        # Convierte la imagen PNG a texto Base64
-        grafico = base64.b64encode(
-            imagen.getvalue()
-        ).decode("utf-8")
+        datos = columnas_numericas[
+            primera_columna
+        ].dropna()
 
-    # Devuelve el gráfico en Base64
-    return grafico
+
+        plt.figure(
+            figsize=(8, 5)
+        )
+
+        plt.hist(
+            datos,
+            bins=10,
+            edgecolor="black"
+        )
+
+        plt.title(
+            f"Distribución de {primera_columna}"
+        )
+
+        plt.xlabel(primera_columna)
+        plt.ylabel("Frecuencia")
+
+        plt.tight_layout()
+
+        graficos["histograma"] = convertir_base64()
+
+
+        # -------------------------
+        # GRÁFICO DE LÍNEAS
+        # -------------------------
+
+        plt.figure(
+            figsize=(9, 5)
+        )
+
+        plt.plot(
+            datos.values
+        )
+
+        plt.title(
+            f"Evolución de {primera_columna}"
+        )
+
+        plt.xlabel("Registro")
+        plt.ylabel(primera_columna)
+
+        plt.tight_layout()
+
+        graficos["lineas"] = convertir_base64()
+
+
+    return graficos
