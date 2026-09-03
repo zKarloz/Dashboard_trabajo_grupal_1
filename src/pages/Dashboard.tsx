@@ -220,6 +220,15 @@ function Dashboard() {
                                         {/* Promedio */}
                                         <p>Media: {valores.media}</p>
 
+                                        {/* Mediana */}
+                                        <p>Mediana: {valores.mediana}</p>
+
+                                        {/* Suma */}
+                                        <p>Suma: {valores.suma}</p>
+
+                                        {/* Rango */}
+                                        <p>Rango: {valores.rango}</p>
+
                                         {/* Desviación estándar */}
                                         <p>Desviación: {valores.desviacion}</p>
                                     </div>

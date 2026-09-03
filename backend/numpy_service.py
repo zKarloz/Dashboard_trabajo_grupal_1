@@ -31,6 +31,15 @@ def procesar_numpy(df):
                 # Calcula la media o promedio
                 "media": float(np.mean(datos)),
 
+                # Calcula la mediana
+                "mediana": float(np.median(datos)),
+
+                # Calcula la suma
+                "suma": float(np.sum(datos)),
+
+                # Calcula el rango (diferencia entre el valor máximo y mínimo)
+                "rango": float(np.ptp(datos)),
+
                 # Calcula la desviación estándar
                 "desviacion": float(np.std(datos))
             }
