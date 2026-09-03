@@ -8,7 +8,6 @@ import numpy as np
 import io
 import base64
 
-
 # Convierte el gráfico actual a Base64
 def convertir_base64():
 
@@ -42,17 +41,12 @@ def crear_graficos(df):
         "lineas": ""
     }
 
-
     # Verifica que exista al menos una columna numérica
     if len(columnas_numericas.columns) > 0:
 
         columnas = columnas_numericas.columns
 
-
-        # -------------------------
         # GRÁFICO DE BARRAS
-        # -------------------------
-
         promedios = columnas_numericas.mean()
 
         ancho = max(
@@ -60,18 +54,11 @@ def crear_graficos(df):
             len(columnas) * 1.2
         )
 
-        plt.figure(
-            figsize=(ancho, 5)
-        )
+        plt.figure(figsize=(ancho, 5))
 
-        plt.bar(
-            columnas,
-            promedios
-        )
+        plt.bar(columnas,promedios)
 
-        plt.title(
-            "Promedio por columna"
-        )
+        plt.title("Promedio por columna")
 
         plt.xlabel("Columnas")
         plt.ylabel("Promedio")
@@ -85,21 +72,14 @@ def crear_graficos(df):
 
         graficos["barras"] = convertir_base64()
 
-
-        # -------------------------
         # HISTOGRAMA
-        # -------------------------
-
         primera_columna = columnas[0]
 
         datos = columnas_numericas[
             primera_columna
         ].dropna()
 
-
-        plt.figure(
-            figsize=(8, 5)
-        )
+        plt.figure(figsize=(8, 5))
 
         plt.hist(
             datos,
@@ -107,9 +87,7 @@ def crear_graficos(df):
             edgecolor="black"
         )
 
-        plt.title(
-            f"Distribución de {primera_columna}"
-        )
+        plt.title(f"Distribución de {primera_columna}")
 
         plt.xlabel(primera_columna)
         plt.ylabel("Frecuencia")
@@ -118,22 +96,12 @@ def crear_graficos(df):
 
         graficos["histograma"] = convertir_base64()
 
-
-        # -------------------------
         # GRÁFICO DE LÍNEAS
-        # -------------------------
+        plt.figure(figsize=(9, 5))
 
-        plt.figure(
-            figsize=(9, 5)
-        )
+        plt.plot(datos.values)
 
-        plt.plot(
-            datos.values
-        )
-
-        plt.title(
-            f"Evolución de {primera_columna}"
-        )
+        plt.title(f"Evolución de {primera_columna}")
 
         plt.xlabel("Registro")
         plt.ylabel(primera_columna)
@@ -141,6 +109,5 @@ def crear_graficos(df):
         plt.tight_layout()
 
         graficos["lineas"] = convertir_base64()
-
 
     return graficos
