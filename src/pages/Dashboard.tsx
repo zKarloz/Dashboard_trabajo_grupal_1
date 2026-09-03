@@ -289,45 +289,67 @@ function Dashboard() {
                 {herramienta === "numpy" && (
                     <div>
                         <h3>NumPy</h3>
-                        {/* Comprueba si existen estadísticas */}
+
                         {Object.keys(estadisticas).length > 0 ? (
 
-                            // Recorre las estadísticas de cada columna
-                            Object.entries(estadisticas).map(
-                                ([columna, valores]: any) => (
+                            <div className="stats-grid">
 
-                                    <div key={columna}>
-                                        {/* Nombre de la columna */}
-                                        <h4>{columna}</h4>
+                                {Object.entries(estadisticas).map(
+                                    ([columna, valores]: any) => (
 
-                                        {/* Valor mínimo */}
-                                        <p>Mínimo: {valores.min}</p>
+                                        <div
+                                            className="stat-card"
+                                            key={columna}
+                                        >
 
-                                        {/* Valor máximo */}
-                                        <p>Máximo: {valores.max}</p>
+                                            <h4>{columna}</h4>
 
-                                        {/* Promedio */}
-                                        <p>Media: {valores.media}</p>
+                                            <div className="stat-row">
+                                                <span>Mínimo</span>
+                                                <strong>{valores.min}</strong>
+                                            </div>
 
-                                        {/* Mediana */}
-                                        <p>Mediana: {valores.mediana}</p>
+                                            <div className="stat-row">
+                                                <span>Máximo</span>
+                                                <strong>{valores.max}</strong>
+                                            </div>
 
-                                        {/* Suma */}
-                                        <p>Suma: {valores.suma}</p>
+                                            <div className="stat-row">
+                                                <span>Media</span>
+                                                <strong>{valores.media}</strong>
+                                            </div>
 
-                                        {/* Rango */}
-                                        <p>Rango: {valores.rango}</p>
+                                            <div className="stat-row">
+                                                <span>Mediana</span>
+                                                <strong>{valores.mediana}</strong>
+                                            </div>
 
-                                        {/* Desviación estándar */}
-                                        <p>Desviación: {valores.desviacion}</p>
-                                    </div>
-                                )
-                            )
+                                            <div className="stat-row">
+                                                <span>Suma</span>
+                                                <strong>{valores.suma}</strong>
+                                            </div>
+
+                                            <div className="stat-row">
+                                                <span>Desviación</span>
+                                                <strong>{valores.desviacion}</strong>
+                                            </div>
+
+                                            <div className="stat-row">
+                                                <span>Rango</span>
+                                                <strong>{valores.rango}</strong>
+                                            </div>
+
+                                        </div>
+                                    )
+                                )}
+
+                            </div>
+
                         ) : (
-                            // Mensaje si aún no hay datos numéricos
-                            <p>Adjunta un CSV con columnas numéricas.</p>
+                            <p>
+                                Adjunta un CSV con columnas numéricas.
+                            </p>
                         )}
-
                     </div>
                 )}
 

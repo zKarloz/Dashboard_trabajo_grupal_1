@@ -191,6 +191,62 @@ tbody tr:hover {
     margin-top: 0;
 }
 
+/* Contenedor de las tarjetas de NumPy */
+/* El repeat auto fit hace que las cards se acomoden automáticamente según el espacio disponible */
+.stats-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(230px, 1fr));
+
+    gap: 18px;
+
+    margin-top: 20px;
+}
+
+
+/* Tarjeta de cada columna */
+.stat-card {
+    padding: 20px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+
+    box-shadow:
+        0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+
+/* Nombre de la columna */
+.stat-card h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid #e2e8f0;
+
+    color: #2563eb;
+}
+
+
+/* Cada estadística */
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 7px 0;
+
+    color: #64748b;
+}
+
+
+/* Valor de la estadística */
+.stat-row strong {
+    color: #1e293b;
+}
 
 /* RESPONSIVE */
 
