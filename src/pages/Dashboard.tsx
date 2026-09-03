@@ -116,6 +116,12 @@ function Dashboard() {
     // Si limpio es true muestra datosLimpios, si no muestra datos
     const tabla = limpio ? datosLimpios : datos;
 
+    const totalNulos = Object.values(nulos).reduce(
+    (total: number, cantidad: any) =>
+        total + Number(cantidad),
+    0
+    );
+
     return(
         <div className="dashboard">
 
@@ -167,23 +173,88 @@ function Dashboard() {
                     <div>
                         <h3>Pandas</h3>
                         
+                        <h4>Información del dataset</h4>
+
+                        {datos.length > 0 && (
+                            <div className="dataset-info">
+
+                                <div className="dataset-card">
+
+                                    <span className="dataset-label">
+                                        Filas
+                                    </span>
+
+                                    <strong className="dataset-value">
+                                        {filas}
+                                    </strong>
+
+                                    <span className="dataset-description">
+                                        Registros encontrados
+                                    </span>
+
+                                </div>
+
+
+                                <div className="dataset-card">
+
+                                    <span className="dataset-label">
+                                        Columnas
+                                    </span>
+
+                                    <strong className="dataset-value">
+                                        {columnas}
+                                    </strong>
+
+                                    <span className="dataset-description">
+                                        Variables del dataset
+                                    </span>
+
+                                </div>
+
+
+                                <div className="dataset-card">
+
+                                    <span className="dataset-label">
+                                        Valores nulos
+                                    </span>
+
+                                    <strong className="dataset-value">
+                                        {totalNulos}
+                                    </strong>
+
+                                    <span className="dataset-description">
+                                        Datos faltantes encontrados
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        )}
+
                         {datos.length > 0 && (
                             <div className="pandas-info">
 
-                                <h4>Información del dataset</h4>
+                                <h4>Valores nulos por columna</h4>
 
-                                <p>Filas: {filas}</p>
-                                <p>Columnas: {columnas}</p>
+                                <div className="nulos-grid">
 
-                                <h4>Valores nulos</h4>
+                                    {Object.entries(nulos).map(
+                                        ([columna, cantidad]: any) => (
 
-                                {Object.entries(nulos).map(
-                                    ([columna, cantidad]: any) => (
-                                        <p key={columna}>
-                                            {columna}: {cantidad}
-                                        </p>
-                                    )
-                                )}
+                                            <div
+                                                className="nulo-item"
+                                                key={columna}
+                                            >
+                                                <span>{columna}</span>
+
+                                                <strong>
+                                                    {cantidad}
+                                                </strong>
+                                            </div>
+                                        )
+                                    )}
+
+                                </div>
 
                             </div>
                         )}
@@ -234,11 +305,15 @@ function Dashboard() {
                             </div>
                         )}
 
+                        <br />
+
                         {/* Muestra nuevamente los datos originales */}
                         <button onClick={() => setLimpio(false)}>Mostrar original</button>
 
                         {/* Muestra los datos limpios */}
                         <button onClick={() => setLimpio(true)}>Limpiar datos</button>
+
+                        <h4>Datos del CSV</h4>
 
                         {/* Comprueba que existan datos para mostrar */}
                         {tabla.length > 0 ? (

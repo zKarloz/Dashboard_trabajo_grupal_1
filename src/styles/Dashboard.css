@@ -151,7 +151,6 @@ tbody tr:hover {
     background-color: #f8fafc;
 }
 
-
 /* GRAFICO */
 
 .grafico-container {
@@ -274,4 +273,96 @@ tbody tr:hover {
     .dashboard-content {
         padding: 20px;
     }
+}
+
+/* Información general del dataset */
+.dataset-info {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+
+    gap: 16px;
+
+    margin: 20px 0 25px;
+}
+
+
+/* Tarjeta de información */
+.dataset-card {
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+
+    box-shadow:
+        0 3px 10px rgba(15, 23, 42, 0.05);
+}
+
+
+/* Nombre del dato */
+.dataset-label {
+    margin-bottom: 8px;
+
+    color: #64748b;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+}
+
+
+/* Número principal */
+.dataset-value {
+    margin-bottom: 5px;
+
+    color: #2563eb;
+
+    font-size: 28px;
+}
+
+
+/* Explicación pequeña */
+.dataset-description {
+    color: #94a3b8;
+
+    font-size: 13px;
+}
+
+.nulos-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+
+    gap: 10px;
+
+    margin-bottom: 25px;
+}
+
+
+.nulo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px 14px;
+
+    background-color: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+
+    color: #475569;
+}
+
+
+.nulo-item strong {
+    color: #2563eb;
 }
